@@ -1,8 +1,8 @@
 In addition:
 * download GESLA3 observational data and meta files from online and adjust paths accordingly (you can unzip individual tidegauges if needed)
 * download model_timeseries_odiv181.nc and model_timeseries_odiv2.nc for model without IB
-* download model_timeseries_psl_odiv181.nc and model_timeseries_psl_odiv181.nc for model with IB
-* these can also be referenced within someone else's workspace when connected to GFDL's system (I currently reference the IB model that way)
+* download model_timeseries_psl_odiv181.nc and model_timeseries_psl_odiv181.nc for pressure at sea level output
+* these can also be referenced within someone else's workspace when connected to GFDL's system (I currently reference the pressure at sea level output)
 
 Current Order of Operations:
 * download UTIDE
