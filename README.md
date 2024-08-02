@@ -10,4 +10,4 @@ Current Order of Operations:
 * find a location in model
 * use example_usage's load_N_closest method to find closest loaction in observational data
 * Preprocess Observational data and save as netcdf
-* Use comparison_advanced to analyze model vs model w/IB vs obs
+* Use comparison_updated to analyze model vs model w/IB vs obs
