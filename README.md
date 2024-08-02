@@ -7,6 +7,6 @@ In addition:
 
 Current Order of Operations:
 * download UTIDE
-* find a location in model first use example_usage load_N_closest to find closest loaction in observation data
+* find a location in model first use example_usage's load_N_closest method to find closest loaction in observation data
 * Preprocess Observational data and save as netcdf
 * Use comparison_advanced to analyze model vs model w/IB vs obs
