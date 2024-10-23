@@ -1,0 +1,68 @@
+import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import utide
+import xarray as xr
+
+year_start=1958
+year_end=2014
+
+model_loc = ['SEATTLE', 'SANDY_HOOK', 'WELLINGTON_HARBOUR']
+
+gesla_loc = {'SEATTLE': "seattle-9447130-usa-noaa",
+		  'SANDY_HOOK': "sandy_hook-8531680-usa-noaa",
+          'WELLINGTON_HARBOUR': "wellington-071a-nzl-uhslc"}
+
+ds = xr.open_dataset("/vftmp/Olivia.Mcredmond/data/model_timeseries_odiv181.nc",decode_times=True)
+da = xr.open_dataset("/vftmp/Olivia.Mcredmond/data/model_timeseries_odiv2.nc",decode_times=True)
+odiv181_pressure= xr.open_dataset("/vftmp/Olivia.Mcredmond/data/model_timeseries_psl_odiv181.nc")
+odiv2_pressure= xr.open_dataset("/vftmp/Olivia.Mcredmond/data/model_timeseries_psl_odiv2.nc")
+
+for i in model_loc:
+	process_model_data(i)
+	process_gesla_data(i)
+
+def process_model_data(location_name):
+    year_start=1958
+    year_end=2014
+    model_ts = ds[location_name]
+    model_ta = da[location_name]
+
+    model2= model_ta.sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31"))
+    model2= model2-model2.mean()
+    model2.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL2_PROCESSED.nc')
+
+    model181= model_ts.sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31"))
+    model181=model181-model181.mean()
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL181_PROCESSED.nc')
+
+    model2_IB = -1*(odiv2_pressure[location_name].sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31")))*0.01*0.1/(1.02*9.8)
+    model2_IB = model2+(model2_IB-model2_IB.mean())
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL2_IB_PROCESSED.nc')
+
+    model181_IB=-1*(odiv181_pressure[location_name].sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31")))*0.01*0.1/(1.02*9.8)
+    model181_IB = model181+np.array(model181_IB-model181_IB.mean())
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL181_IB_PROCESSED.nc')
+    
+def process_model_data(location_name):
+    year_start=1958
+    year_end=2014
+    model_ts = ds[location_name]
+    model_ta = da[location_name]
+
+    model2= model_ta.sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31"))
+    model2= model2-model2.mean()
+    model2.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL2_PROCESSED.nc')
+
+    model181= model_ts.sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31"))
+    model181=model181-model181.mean()
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL181_PROCESSED.nc')
+
+    model2_IB = -1*(odiv2_pressure[location_name].sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31")))*0.01*0.1/(1.02*9.8)
+    model2_IB = model2+(model2_IB-model2_IB.mean())
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL2_IB_PROCESSED.nc')
+
+    model181_IB=-1*(odiv181_pressure[location_name].sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31")))*0.01*0.1/(1.02*9.8)
+    model181_IB = model181+np.array(model181_IB-model181_IB.mean())
+    model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL181_IB_PROCESSED.nc')
