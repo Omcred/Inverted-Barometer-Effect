@@ -66,3 +66,64 @@ def process_model_data(location_name):
     model181_IB=-1*(odiv181_pressure[location_name].sel(time=slice(f"{year_start}-01-01", f"{year_end}-12-31")))*0.01*0.1/(1.02*9.8)
     model181_IB = model181+np.array(model181_IB-model181_IB.mean())
     model181.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_MODEL181_IB_PROCESSED.nc')
+def process_gesla_data(location_name):
+    gesla_name = gesla_loc[location_name]
+    data = f'../data/{gesla_name}'
+    with open(data) as f:
+        lines = f.readlines()
+
+    for row in lines:
+        word = 'LATITUDE'
+        if row.find(word) != -1:
+            lat= float((row.split("DE ")[1]).strip())
+            break
+    names = ["date", "hour", "sealevel", "flag", "use_flag"]
+    #Read data from file
+    obs = pd.read_csv(
+        data,
+        names=names,
+        skiprows=41, # to skip the large header and documentation, would need to check whether this is the same for every time series
+        skipinitialspace=True,
+        delim_whitespace=True,
+        na_values="-99.9999",
+    )
+    
+    #Turn bad data to nan using flags
+    good_data = obs['use_flag'] == 1
+    bad_data = obs['use_flag'] == 0
+    obs.loc[bad_data, "sealevel"] = np.nan
+    
+    #Subtract mean and define datetime
+    obs["anomaly"] = obs['sealevel'] - obs['sealevel'].mean()
+    obs['datetime'] = pd.to_datetime(obs['date'] + ' ' +obs['hour'])
+
+    t1 = (obs['datetime'] >= '1800-1-1') & (obs['datetime'] <= '2021-12-31')
+    obs_t1=obs.loc[t1]
+    print("pt 1")
+    coef = utide.solve(
+        obs_t1.datetime,
+        obs_t1.anomaly,
+        lat= lat,
+        method="ols",
+        conf_int="MC",
+        verbose=False,
+       constit=['M2', 'K1', 'O1', 'S2', 'P1', 'N2', 'K2'] 
+    )
+    print("pt 2")
+    # Reconstruct using coefficients defined from utide for a defined time length ('obs_1.datetime' in this case)
+    tide = utide.reconstruct(obs_t1.datetime, coef, verbose=False)
+    obs_t1['sealevel_tr'] = obs_t1.anomaly - tide.h
+
+    obs_t1['datetime'] = pd.to_datetime(obs_t1['datetime'])
+    # Set the datetime column as the index
+    obs_t1.set_index('datetime', inplace=True)
+    daily_avg=obs_t1['sealevel_tr'].resample('D').mean()
+    daily_avg=daily_avg.to_frame()
+    daily_avg['anomaly']=obs_t1['anomaly'].resample('D').mean()
+    daily_avg['datetime']=daily_avg.index
+	## open file using gesla_name
+	## remove tides
+	## create daily averages (this order may be wrong!)
+    daily_set = xr.Dataset.from_dataframe(daily_avg)
+    daily_set.to_netcdf(f'/vftmp/Olivia.Mcredmond/data/cdf files/{location_name}_GESLA_PROCESSED.nc')
+## You can then compare ST_PETERSBURG_MODEL_PROCESSED.nc and ST_PETERSBURG_GESLA_PROCESSED.nc!
